@@ -137,6 +137,7 @@ fun ItemInputForm(
                 disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
             modifier = Modifier.fillMaxWidth(),
+            isError =  itemDetails.name.isNotBlank(),
             enabled = enabled,
             singleLine = true
         )
@@ -152,6 +153,7 @@ fun ItemInputForm(
             ),
             leadingIcon = { Text(Currency.getInstance(Locale.getDefault()).symbol) },
             modifier = Modifier.fillMaxWidth(),
+            isError =  itemDetails.price.isNotBlank(),
             enabled = enabled,
             singleLine = true
         )
@@ -166,6 +168,52 @@ fun ItemInputForm(
                 disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
             modifier = Modifier.fillMaxWidth(),
+            isError =  itemDetails.quantity.isNotBlank(),
+            enabled = enabled,
+            singleLine = true
+        )
+        OutlinedTextField(
+            value = itemDetails.sellerName,
+            onValueChange = { onValueChange(itemDetails.copy(sellerName = it)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            label = { Text(stringResource(R.string.seller_name)) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            isError =  itemDetails.sellerName.isNotBlank(),
+            enabled = enabled,
+            singleLine = true
+        )
+        OutlinedTextField(
+            value = itemDetails.sellerPhone,
+            onValueChange = { onValueChange(itemDetails.copy(sellerPhone = it)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            label = { Text(stringResource(R.string.seller_phone)) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            isError = itemDetails.sellerPhone.isNotBlank(),
+            enabled = enabled,
+            singleLine = true
+        )
+        OutlinedTextField(
+            value = itemDetails.sellerEmail,
+            onValueChange = { onValueChange(itemDetails.copy(sellerEmail = it)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            label = { Text(stringResource(R.string.seller_email)) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+            ),
+            modifier = Modifier.fillMaxWidth(),
+            isError = !itemDetails.isSupplierEmailValid && itemDetails.sellerEmail.isNotBlank(),
             enabled = enabled,
             singleLine = true
         )
@@ -178,14 +226,14 @@ fun ItemInputForm(
     }
 }
 
-@Preview(showBackground = true)
+/*@Preview(showBackground = true)
 @Composable
 private fun ItemEntryScreenPreview() {
     InventoryTheme {
         ItemEntryBody(itemUiState = ItemUiState(
             ItemDetails(
-                name = "Item name", price = "10.00", quantity = "5"
+                name = "Item name", price = "10.00", quantity = "5", sellerName = "Pete", sellerEmail = "t@gmail.com", sellerPhone = "+6"
             )
         ), onItemValueChange = {}, onSaveClick = {})
     }
-}
+}*/

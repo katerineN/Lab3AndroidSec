@@ -70,7 +70,15 @@ data class ItemDetails(
     val name: String = "",
     val price: String = "",
     val quantity: String = "",
-)
+    val sellerName: String = "",
+    val sellerEmail: String = "",
+    val sellerPhone: String = "",
+){
+    val isSupplierEmailValid: Boolean
+        get() {
+            return Regex("""^[a-z0-9!#${'$'}%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#${'$'}%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?${'$'}""").matches(sellerEmail)
+        }
+}
 
 /**
  * Extension function to convert [ItemDetails] to [Item]. If the value of [ItemDetails.price] is
@@ -81,7 +89,10 @@ fun ItemDetails.toItem(): Item = Item(
     id = id,
     name = name,
     price = price.toDoubleOrNull() ?: 0.0,
-    quantity = quantity.toIntOrNull() ?: 0
+    quantity = quantity.toIntOrNull() ?: 0,
+    sellerName = sellerName,
+    sellerEmail = sellerEmail,
+    sellerPhone =  sellerPhone
 )
 
 fun Item.formatedPrice(): String {
@@ -103,5 +114,8 @@ fun Item.toItemDetails(): ItemDetails = ItemDetails(
     id = id,
     name = name,
     price = price.toString(),
-    quantity = quantity.toString()
+    quantity = quantity.toString(),
+    sellerName = sellerName,
+    sellerEmail = sellerEmail,
+    sellerPhone =  sellerPhone
 )

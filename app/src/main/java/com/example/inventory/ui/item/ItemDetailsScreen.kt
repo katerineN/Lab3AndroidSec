@@ -16,6 +16,10 @@
 
 package com.example.inventory.ui.item
 
+import android.content.Intent
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -122,6 +126,15 @@ private fun ItemDetailsBody(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val shareIntent = Intent().apply {
+        action = Intent.ACTION_SEND
+        putExtra(Intent.EXTRA_TEXT, itemDetailsUiState.itemDetails.toItem().toString())
+        type = "text/plain"
+    }
+
+    val shareLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
+        Log.d("Direct Share","Direct Share intent completed. Result code: ${res.resultCode}")
+    }
     Column(
         modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
@@ -146,6 +159,16 @@ private fun ItemDetailsBody(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.delete))
+        }
+
+        OutlinedButton(
+            onClick = {
+                shareLauncher.launch(Intent.createChooser(shareIntent, "Share product via:"))
+            },
+            shape = MaterialTheme.shapes.small,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.share))
         }
         if (deleteConfirmationRequired) {
             DeleteConfirmationDialog(
@@ -196,6 +219,27 @@ fun ItemDetails(
             ItemDetailsRow(
                 labelResID = R.string.price,
                 itemDetail = item.formatedPrice(),
+                modifier = Modifier.padding(
+                    horizontal = dimensionResource(id = R.dimen.padding_medium)
+                )
+            )
+            ItemDetailsRow(
+                labelResID = R.string.seller_name,
+                itemDetail = item.sellerName,
+                modifier = Modifier.padding(
+                    horizontal = dimensionResource(id = R.dimen.padding_medium)
+                )
+            )
+            ItemDetailsRow(
+                labelResID = R.string.seller_email,
+                itemDetail = item.sellerEmail,
+                modifier = Modifier.padding(
+                    horizontal = dimensionResource(id = R.dimen.padding_medium)
+                )
+            )
+            ItemDetailsRow(
+                labelResID = R.string.seller_phone,
+                itemDetail = item.sellerPhone,
                 modifier = Modifier.padding(
                     horizontal = dimensionResource(id = R.dimen.padding_medium)
                 )

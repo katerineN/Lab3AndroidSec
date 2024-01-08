@@ -27,6 +27,16 @@ data class Item(
     val id: Int = 0,
     val name: String,
     val price: Double,
-    val quantity: Int
-)
+    val quantity: Int,
+    val sellerName: String,
+    val sellerPhone: String,
+    val sellerEmail: String,
+) {
+    override fun toString(): String {
+        return "$name\n" +
+                "Price: $price₽\n" +
+                "In stock: $quantity\n" +
+                "Seller:\n    $sellerName\n    $sellerPhone\n    $sellerEmail"
+    }
+}
 

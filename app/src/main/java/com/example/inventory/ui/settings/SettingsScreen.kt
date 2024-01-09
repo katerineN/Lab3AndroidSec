@@ -33,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,11 +47,14 @@ import com.example.inventory.R
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.theme.InventoryTheme
+import kotlin.reflect.KFunction1
 
 object SettingsDestination : NavigationDestination {
     override val route = "settings"
     override val titleRes = R.string.settings_title
 }
+
+var enables = false
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,15 +86,14 @@ fun SettingsScreen(
             SettingItem(
                 name = "Default values",
                 isChecked = settingsUiState.enterDefaults,
-                onCheckedChange = viewModel::onUseDefaultValuesCheckedChanged,
-                enabled = false
+                onCheckedChange = viewModel::onUseDefaultValuesCheckedChanged
             ) {
                 DefaultInputField(
                     value = settingsUiState.defaultSellerName,
                     onValueChange = viewModel::onDefaultSellerNameChanged,
                     label = stringResource(R.string.seller_name),
                     keyboardType = KeyboardType.Text,
-                    enabled = false
+                    enabled = enables
                 )
                 Spacer(Modifier.height(8.0.dp))
                 DefaultInputField(
@@ -100,7 +101,7 @@ fun SettingsScreen(
                     onValueChange = viewModel::onDefaultSellerEmailChanged,
                     label = stringResource(R.string.seller_email),
                     keyboardType = KeyboardType.Email,
-                    enabled = false
+                    enabled = enables
                 )
                 Spacer(Modifier.height(8.0.dp))
                 DefaultInputField(
@@ -108,7 +109,7 @@ fun SettingsScreen(
                     onValueChange = viewModel::onDefaultSellerPhoneChanged,
                     label = stringResource(R.string.seller_phone),
                     keyboardType = KeyboardType.Phone,
-                    enabled = false
+                    enabled = enables
                 )
             }
 
@@ -131,7 +132,7 @@ fun SettingItem(
     name: String,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    enabled: Boolean = true, // Добавлен новый параметр
+    enabled: Boolean = true,
     content: (@Composable ColumnScope.() -> Unit)? = null
 ) {
     Card(
@@ -151,11 +152,6 @@ fun SettingItem(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .weight(1f, true)
-                    .clickable(enabled = enabled) {
-                        if (enabled) {
-                            onCheckedChange(!isChecked)
-                        }
-                    }
             )
             Spacer(modifier = Modifier.width(16.0.dp))
             Switch(
@@ -163,8 +159,9 @@ fun SettingItem(
                 onCheckedChange = onCheckedChange,
                 enabled = enabled
             )
+            enables = name == "Default values" && isChecked
         }
-        if (isChecked && content != null) {
+        if (content != null && enabled){
             Column(
                 content = content,
                 modifier = Modifier

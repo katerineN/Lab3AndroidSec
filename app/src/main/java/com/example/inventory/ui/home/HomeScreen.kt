@@ -53,6 +53,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
 import com.example.inventory.data.Item
+import com.example.inventory.data.ItemType
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.item.formatedPrice
 import com.example.inventory.ui.navigation.NavigationDestination
@@ -72,6 +73,7 @@ object HomeDestination : NavigationDestination {
 fun HomeScreen(
     navigateToItemEntry: () -> Unit,
     navigateToItemUpdate: (Int) -> Unit,
+    navigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -84,6 +86,8 @@ fun HomeScreen(
             InventoryTopAppBar(
                 title = stringResource(HomeDestination.titleRes),
                 canNavigateBack = false,
+                isMainScreen = true,
+                onSettingsClick = navigateToSettings,
                 scrollBehavior = scrollBehavior
             )
         },
@@ -185,7 +189,7 @@ private fun InventoryItem(
 fun HomeBodyPreview() {
     InventoryTheme {
         HomeBody(listOf(
-            Item(1, "Game", 100.0, 20, "Pete", "8908", "t@gmail.com"), Item(2, "Pen", 200.0, 30,"Pete", "8908", "t@gmail.com"), Item(3, "TV", 300.0, 50, "Pete", "8908", "t@gmail.com")
+            Item(1, "Game", 100.0, 20, "Pete", "8908", "t@gmail.com", ItemType.MANUAL), Item(2, "Pen", 200.0, 30,"Pete", "8908", "t@gmail.com", ItemType.MANUAL), Item(3, "TV", 300.0, 50, "Pete", "8908", "t@gmail.com",  ItemType.MANUAL)
         ), onItemClick = {})
     }
 }
@@ -203,7 +207,7 @@ fun HomeBodyEmptyListPreview() {
 fun InventoryItemPreview() {
     InventoryTheme {
         InventoryItem(
-            Item(1, "Game", 100.0, 20, "Pete", "8908", "t@gmail.com"),
+            Item(1, "Game", 100.0, 20, "Pete", "8908", "t@gmail.com",  ItemType.MANUAL),
         )
     }
 }

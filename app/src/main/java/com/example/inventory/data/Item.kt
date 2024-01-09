@@ -31,6 +31,7 @@ data class Item(
     val sellerName: String,
     val sellerPhone: String,
     val sellerEmail: String,
+    val type: ItemType
 ) {
     override fun toString(): String {
         return "$name\n" +
@@ -38,5 +39,9 @@ data class Item(
                 "In stock: $quantity\n" +
                 "Seller:\n    $sellerName\n    $sellerPhone\n    $sellerEmail"
     }
+}
+
+enum class ItemType{
+    MANUAL, FILE
 }
 

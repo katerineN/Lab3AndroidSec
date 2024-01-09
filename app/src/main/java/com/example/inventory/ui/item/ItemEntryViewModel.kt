@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.inventory.data.Item
+import com.example.inventory.data.ItemType
 import com.example.inventory.data.ItemsRepository
 import java.text.NumberFormat
 
@@ -52,7 +53,8 @@ class ItemEntryViewModel(private val itemsRepository: ItemsRepository)  : ViewMo
 
     private fun validateInput(uiState: ItemDetails = itemUiState.itemDetails): Boolean {
         return with(uiState) {
-            name.isNotBlank() && price.isNotBlank() && quantity.isNotBlank()
+            (isNameValid && name.isNotBlank()) && (isPriceValid && price.isNotBlank()) && (isQuantityValid && quantity.isNotBlank())
+                    && isPhoneValid && isSellerEmailValid && isSellerNameValid
         }
     }
 }
@@ -73,11 +75,38 @@ data class ItemDetails(
     val sellerName: String = "",
     val sellerEmail: String = "",
     val sellerPhone: String = "",
+    @Transient var type: ItemType = ItemType.MANUAL
 ){
-    val isSupplierEmailValid: Boolean
-        get() {
-            return Regex("""^[a-z0-9!#${'$'}%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#${'$'}%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?${'$'}""").matches(sellerEmail)
+    val isSellerEmailValid: Boolean
+        get() = if (sellerEmail.isNotBlank()) {
+            Regex("""^[a-z0-9!#${'$'}%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#${'$'}%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?${'$'}""").matches(sellerEmail)
+        } else {
+            true // Возвращает true, если поле пустое
         }
+
+    val isPriceValid: Boolean
+        get() = Regex("\\d*\\.?\\d+").matches(price)
+
+    val isQuantityValid: Boolean
+        get() = Regex("\\d+").matches(quantity)
+
+    val isNameValid: Boolean
+        get() = name.length > 2
+
+    val isSellerNameValid: Boolean
+        get() = if (sellerName.isNotBlank()) {
+            sellerName.length > 2
+        } else {
+            true
+        }
+
+    val isPhoneValid: Boolean
+        get() = if (sellerPhone.isNotBlank()){
+            Regex("\\+\\d{11}").matches(sellerPhone)
+        } else {
+            true
+        }
+
 }
 
 /**
@@ -92,7 +121,8 @@ fun ItemDetails.toItem(): Item = Item(
     quantity = quantity.toIntOrNull() ?: 0,
     sellerName = sellerName,
     sellerEmail = sellerEmail,
-    sellerPhone =  sellerPhone
+    sellerPhone =  sellerPhone,
+    type = type
 )
 
 fun Item.formatedPrice(): String {

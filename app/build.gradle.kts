@@ -20,6 +20,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version "1.8.21-1.0.11"
+    kotlin("plugin.serialization") version "1.8.21"
 }
 
 android {
@@ -68,6 +69,7 @@ android {
     namespace = "com.example.inventory"
 }
 
+
 dependencies {
     // Import the Compose BOM
     implementation(platform("androidx.compose:compose-bom:2023.06.01"))
@@ -83,9 +85,16 @@ dependencies {
 
     //Room
     implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
-    implementation("androidx.core:core-ktx:1.10.1")
+    implementation("androidx.core:core-ktx:1.7.0")
+
+    implementation("net.zetetic:android-database-sqlcipher:4.5.0")
+    implementation("androidx.security:security-crypto-ktx:1.1.0-alpha06")
+    implementation ("androidx.sqlite:sqlite:2.2.0")
+    implementation("com.commonsware.cwac:saferoom.x:1.3.0")
+
     ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
     implementation("androidx.room:room-ktx:${rootProject.extra["room_version"]}")
+    implementation("androidx.sharetarget:sharetarget:1.2.0-rc01")
 
     // Testing
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

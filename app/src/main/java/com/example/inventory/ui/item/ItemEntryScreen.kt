@@ -115,7 +115,6 @@ fun ItemEntryBody(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemInputForm(
     itemDetails: ItemDetails,
@@ -137,7 +136,7 @@ fun ItemInputForm(
                 disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
             modifier = Modifier.fillMaxWidth(),
-            isError =  itemDetails.name.isNotBlank(),
+            isError =  !itemDetails.isNameValid && itemDetails.name.isNotBlank(),
             enabled = enabled,
             singleLine = true
         )
@@ -153,7 +152,7 @@ fun ItemInputForm(
             ),
             leadingIcon = { Text(Currency.getInstance(Locale.getDefault()).symbol) },
             modifier = Modifier.fillMaxWidth(),
-            isError =  itemDetails.price.isNotBlank(),
+            isError =  !itemDetails.isPriceValid && itemDetails.price.isNotBlank(),
             enabled = enabled,
             singleLine = true
         )
@@ -168,7 +167,7 @@ fun ItemInputForm(
                 disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
             modifier = Modifier.fillMaxWidth(),
-            isError =  itemDetails.quantity.isNotBlank(),
+            isError =  !itemDetails.isQuantityValid && itemDetails.quantity.isNotBlank(),
             enabled = enabled,
             singleLine = true
         )
@@ -183,7 +182,7 @@ fun ItemInputForm(
                 disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
             modifier = Modifier.fillMaxWidth(),
-            isError =  itemDetails.sellerName.isNotBlank(),
+            isError =  !itemDetails.isNameValid && itemDetails.sellerName.isNotBlank(),
             enabled = enabled,
             singleLine = true
         )
@@ -198,7 +197,7 @@ fun ItemInputForm(
                 disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
             modifier = Modifier.fillMaxWidth(),
-            isError = itemDetails.sellerPhone.isNotBlank(),
+            isError = !itemDetails.isPhoneValid && itemDetails.sellerPhone.isNotBlank(),
             enabled = enabled,
             singleLine = true
         )
@@ -213,7 +212,7 @@ fun ItemInputForm(
                 disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
             modifier = Modifier.fillMaxWidth(),
-            isError = !itemDetails.isSupplierEmailValid && itemDetails.sellerEmail.isNotBlank(),
+            isError = !itemDetails.isSellerEmailValid && itemDetails.sellerEmail.isNotBlank(),
             enabled = enabled,
             singleLine = true
         )

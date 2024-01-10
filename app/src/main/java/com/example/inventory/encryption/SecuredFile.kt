@@ -21,7 +21,8 @@ class SecuredFile(private val applicationContext: Context) : SecuredFileReposito
 
         @OptIn(ExperimentalSerializationApi::class)
         override suspend fun saveItemToFile(item: Item, targetFile: Uri) {
-            val cachedFile = File(applicationContext.cacheDir, targetFile.lastPathSegment!!.split("/").last())
+            val fileName = item.name
+            val cachedFile = File(applicationContext.cacheDir, fileName)
             val encryptedCachedFile = EncryptedFile.Builder(
                 cachedFile,
                 applicationContext,
@@ -39,11 +40,8 @@ class SecuredFile(private val applicationContext: Context) : SecuredFileReposito
             val encryptedCacheInput = cachedFile.inputStream()
             val targetOutput = applicationContext.contentResolver.openOutputStream(targetFile)
 
-            val copyResult = encryptedCacheInput.copyTo(targetOutput!!)
-            Log.i("InventoryFile", "File was copied ($copyResult bytes)")
-
             withContext(Dispatchers.IO) {
-                targetOutput.close()
+                targetOutput?.close()
                 encryptedCacheInput.close()
                 cachedFile.delete()
             }

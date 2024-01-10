@@ -6,7 +6,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.security.crypto.MasterKeys
 import androidx.security.crypto.MasterKeys.AES256_GCM_SPEC
-import com.example.inventory.encryption.AppSettings
 import com.commonsware.cwac.saferoom.SQLCipherUtils
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory

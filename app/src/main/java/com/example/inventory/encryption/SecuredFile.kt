@@ -2,7 +2,6 @@ package com.example.inventory.encryption
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.MasterKeys.AES256_GCM_SPEC
 import androidx.security.crypto.MasterKeys.getOrCreate

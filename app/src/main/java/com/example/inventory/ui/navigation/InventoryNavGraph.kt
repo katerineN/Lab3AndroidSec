@@ -61,8 +61,7 @@ fun InventoryNavHost(
         composable(route = ItemEntryDestination.route) {
             ItemEntryScreen(
                 navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() },
-                settingsViewModel = settingsViewModel
+                onNavigateUp = { navController.navigateUp() }
             )
         }
         composable(route = SettingsDestination.route) {
@@ -82,7 +81,6 @@ fun InventoryNavHost(
                 navigateBack = { navController.navigateUp() },
                 settings = settingsViewModel.settingsUiState.value,
                 share = settingsViewModel.settingsUiState.value,
-                settingsViewModel = settingsViewModel
             )
         }
         composable(

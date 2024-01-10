@@ -18,7 +18,6 @@ package com.example.inventory.ui.item
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -37,22 +36,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.security.crypto.EncryptedFile
 import com.example.inventory.InventoryTopAppBar
@@ -61,7 +50,6 @@ import com.example.inventory.data.ItemType
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.settings.SettingsViewModel
-import com.example.inventory.ui.theme.InventoryTheme
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -80,16 +68,9 @@ fun ItemEntryScreen(
     navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     canNavigateBack: Boolean = true,
-    viewModel: ItemEntryViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    settingsViewModel: SettingsViewModel
+    viewModel: ItemEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val intent = remember {
-        Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = "application/octet-stream"
-        }
-    }
     val fileChooseLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()){ result ->
         result.data?.data?.let{
             coroutineScope.launch {
@@ -162,7 +143,7 @@ private fun saveUriToCache(uri: Uri, context: Context): File {
 private fun readDetailsFromEncryptedFile(encryptedFile: EncryptedFile): ItemDetails {
     // Чтение деталей из зашифрованного файла
     return encryptedFile.openFileInput().use { input ->
-        Json.decodeFromString<ItemDetails>(input.bufferedReader().readText())
+        Json.decodeFromString(input.bufferedReader().readText())
     }
 }
 

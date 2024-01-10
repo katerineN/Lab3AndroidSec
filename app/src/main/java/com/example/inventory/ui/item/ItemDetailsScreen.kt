@@ -16,17 +16,12 @@
 
 package com.example.inventory.ui.item
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import android.system.Os.close
-import android.system.Os.write
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,8 +29,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -46,14 +39,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,45 +52,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.security.crypto.EncryptedFile
 import com.example.inventory.InventoryTopAppBar
 import com.example.inventory.R
 import com.example.inventory.data.Item
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
-import com.example.inventory.ui.settings.SettingsItems
 import com.example.inventory.ui.settings.SettingsUiState
-import com.example.inventory.ui.settings.SettingsViewModel
-import com.example.inventory.ui.theme.InventoryTheme
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import java.io.File
-import java.io.FileOutputStream
 import java.util.UUID
 
 object ItemDetailsDestination : NavigationDestination {
@@ -117,8 +84,7 @@ fun ItemDetailsScreen(
     modifier: Modifier = Modifier,
     viewModel: ItemDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory),
     settings: SettingsUiState,
-    share: SettingsUiState,
-    settingsViewModel: SettingsViewModel
+    share: SettingsUiState
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
@@ -158,7 +124,6 @@ fun ItemDetailsScreen(
                 .verticalScroll(rememberScrollState()),
             settings = settings,
             share = share,
-            settingsViewModel = settingsViewModel,
             onSave = {
                 coroutineScope.launch {
                     viewModel.saveItem(it)
@@ -166,12 +131,6 @@ fun ItemDetailsScreen(
             },
         )
     }
-}
-
-private fun createFileIntent(itemName:String) = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-    addCategory(Intent.CATEGORY_OPENABLE)
-    type = "application/json"
-    putExtra(Intent.EXTRA_TITLE, "$itemName.json")
 }
 
 
@@ -183,8 +142,7 @@ private fun ItemDetailsBody(
     settings: SettingsUiState,
     share: SettingsUiState,
     modifier: Modifier = Modifier,
-    onSave: (Uri?) -> Unit,
-    settingsViewModel: SettingsViewModel
+    onSave: (Uri?) -> Unit
 ) {
     val shareIntent = Intent().apply {
         action = Intent.ACTION_SEND
@@ -353,9 +311,7 @@ private fun ItemDetailsRow(
         Text(stringResource(labelResID))
         Spacer(modifier = Modifier.weight(1f))
         if (isHidden) {
-            Text(text = itemDetail, fontWeight = FontWeight.Bold, modifier = Modifier.let{
-                it.blur(10.dp)
-            })
+            Text(text = itemDetail, fontWeight = FontWeight.Bold, modifier = Modifier.blur(10.dp))
         } else {
             Text(text = itemDetail, fontWeight = FontWeight.Bold, modifier = Modifier)
         }

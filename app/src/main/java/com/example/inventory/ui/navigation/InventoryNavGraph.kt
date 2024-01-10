@@ -42,6 +42,7 @@ import com.example.inventory.ui.settings.SettingsViewModel
 fun InventoryNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    settingsViewModel: SettingsViewModel = SettingsViewModel()
 ) {
     NavHost(
         navController = navController,
@@ -60,7 +61,8 @@ fun InventoryNavHost(
         composable(route = ItemEntryDestination.route) {
             ItemEntryScreen(
                 navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() }
+                onNavigateUp = { navController.navigateUp() },
+                settingsViewModel = settingsViewModel
             )
         }
         composable(route = SettingsDestination.route) {
@@ -77,7 +79,10 @@ fun InventoryNavHost(
         ) {
             ItemDetailsScreen(
                 navigateToEditItem = { navController.navigate("${ItemEditDestination.route}/$it") },
-                navigateBack = { navController.navigateUp() }
+                navigateBack = { navController.navigateUp() },
+                settings = settingsViewModel.settingsUiState.value,
+                share = settingsViewModel.settingsUiState.value,
+                settingsViewModel = settingsViewModel
             )
         }
         composable(

@@ -17,12 +17,15 @@
 package com.example.inventory.data
 
 import android.content.Context
+import com.example.inventory.encryption.SecuredFile
+import com.example.inventory.encryption.SecuredFileRepository
 
 /**
  * App container for Dependency injection.
  */
 interface AppContainer {
     val itemsRepository: ItemsRepository
+    val fileRepository: SecuredFileRepository
 }
 
 /**
@@ -35,5 +38,9 @@ class AppDataContainer(private val context: Context) : AppContainer {
     override val itemsRepository: ItemsRepository by lazy {
         //OfflineItemsRepository(InventoryDatabase.getDatabase(context).itemDao())
         OfflineItemsRepository(InventoryDatabase.getEncryptedDatabase(context).itemDao())
+    }
+
+    override val fileRepository: SecuredFileRepository by lazy {
+        SecuredFile(context)
     }
 }

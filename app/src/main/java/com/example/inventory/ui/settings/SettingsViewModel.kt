@@ -1,8 +1,12 @@
 package com.example.inventory.ui.settings
 
+import android.app.Application
+import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.security.crypto.EncryptedFile
 import com.example.inventory.encryption.AppSettings
+import java.io.File
 
 
 data class SettingsItems(
@@ -14,8 +18,8 @@ data class SettingsItems(
     val defaultSellerEmail: String? = null
 )
 
-class SettingsViewModel(
-) : ViewModel() {
+
+class SettingsViewModel() : ViewModel() {
 
     /**
      * Holds current item ui state
@@ -52,6 +56,14 @@ class SettingsViewModel(
         settingsUiState.value = settingsUiState.value.copy(defaultSellerPhone = newValue)
         AppSettings.updateSettings(SettingsItems(defaultSellerPhone = newValue))
     }
+
+    fun encryptFile(context: Context, file: File) = EncryptedFile.Builder(
+        context.applicationContext, // applicationContext используется для избежания утечек памяти
+        file,
+        AppSettings.mainKey,
+        EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+    ).build()
+
 }
 
 data class SettingsUiState(
@@ -70,7 +82,7 @@ fun SettingsItems.toSettingsUiState(): SettingsUiState {
         hideSensitiveData = hideSensitiveData ?: false,
         dataSharing = dataSharing ?: false,
         defaultSellerName = defaultSellerName ?: "",
-        defaultSellerPhone = defaultSellerName ?: "",
-        defaultSellerEmail = defaultSellerName ?: ""
+        defaultSellerPhone = defaultSellerPhone ?: "",
+        defaultSellerEmail = defaultSellerEmail ?: ""
     )
 }

@@ -16,11 +16,17 @@
 
 package com.example.inventory.ui.item
 
+import android.app.Activity
 import android.content.Intent
+import android.net.Uri
+import android.system.Os.close
+import android.system.Os.write
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +34,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -38,23 +46,44 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.security.crypto.EncryptedFile
 import com.example.inventory.InventoryTopAppBar
@@ -62,9 +91,16 @@ import com.example.inventory.R
 import com.example.inventory.data.Item
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
+import com.example.inventory.ui.settings.SettingsItems
+import com.example.inventory.ui.settings.SettingsUiState
+import com.example.inventory.ui.settings.SettingsViewModel
 import com.example.inventory.ui.theme.InventoryTheme
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.io.File
+import java.io.FileOutputStream
+import java.util.UUID
 
 object ItemDetailsDestination : NavigationDestination {
     override val route = "item_details"
@@ -79,7 +115,10 @@ fun ItemDetailsScreen(
     navigateToEditItem: (Int) -> Unit,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ItemDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: ItemDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    settings: SettingsUiState,
+    share: SettingsUiState,
+    settingsViewModel: SettingsViewModel
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
@@ -116,17 +155,36 @@ fun ItemDetailsScreen(
             },
             modifier = Modifier
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+            settings = settings,
+            share = share,
+            settingsViewModel = settingsViewModel,
+            onSave = {
+                coroutineScope.launch {
+                    viewModel.saveItem(it)
+                }
+            },
         )
     }
 }
+
+private fun createFileIntent(itemName:String) = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+    addCategory(Intent.CATEGORY_OPENABLE)
+    type = "application/json"
+    putExtra(Intent.EXTRA_TITLE, "$itemName.json")
+}
+
 
 @Composable
 private fun ItemDetailsBody(
     itemDetailsUiState: ItemDetailsUiState,
     onSellItem: () -> Unit,
     onDelete: () -> Unit,
-    modifier: Modifier = Modifier
+    settings: SettingsUiState,
+    share: SettingsUiState,
+    modifier: Modifier = Modifier,
+    onSave: (Uri?) -> Unit,
+    settingsViewModel: SettingsViewModel
 ) {
     val shareIntent = Intent().apply {
         action = Intent.ACTION_SEND
@@ -137,6 +195,19 @@ private fun ItemDetailsBody(
     val shareLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
         Log.d("Direct Share","Direct Share intent completed. Result code: ${res.resultCode}")
     }
+
+    val intent = remember {
+        Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/octet-stream"
+            putExtra(Intent.EXTRA_TITLE, "item_${UUID.randomUUID()}")
+        }
+    }
+    val fileCreationLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()){ result ->
+        result.data?.data?.let{
+            onSave(it)
+        }
+    }
     Column(
         modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
@@ -145,7 +216,8 @@ private fun ItemDetailsBody(
 
         ItemDetails(
             item = itemDetailsUiState.itemDetails.toItem(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            settings = settings.hideSensitiveData
         )
         Button(
             onClick = onSellItem,
@@ -162,13 +234,20 @@ private fun ItemDetailsBody(
         ) {
             Text(stringResource(R.string.delete))
         }
-
+        OutlinedButton(
+            onClick = { fileCreationLauncher.launch(intent) },
+            shape = MaterialTheme.shapes.small,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Save")
+        }
         OutlinedButton(
             onClick = {
                 shareLauncher.launch(Intent.createChooser(shareIntent, "Share product via:"))
             },
             shape = MaterialTheme.shapes.small,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = share.dataSharing
         ) {
             Text(stringResource(R.string.share))
         }
@@ -187,7 +266,7 @@ private fun ItemDetailsBody(
 
 @Composable
 fun ItemDetails(
-    item: Item, modifier: Modifier = Modifier
+    item: Item, modifier: Modifier = Modifier, settings: Boolean
 ) {
     Card(
         modifier = modifier,
@@ -209,7 +288,8 @@ fun ItemDetails(
                 itemDetail = item.name,
                 modifier = Modifier.padding(
                     horizontal = dimensionResource(id = R.dimen.padding_medium)
-                )
+                ),
+
             )
             ItemDetailsRow(
                 labelResID = R.string.quantity_in_stock,
@@ -230,36 +310,60 @@ fun ItemDetails(
                 itemDetail = item.sellerName,
                 modifier = Modifier.padding(
                     horizontal = dimensionResource(id = R.dimen.padding_medium)
-                )
+                ),
+                isHidden = settings
             )
             ItemDetailsRow(
                 labelResID = R.string.seller_email,
                 itemDetail = item.sellerEmail,
                 modifier = Modifier.padding(
                     horizontal = dimensionResource(id = R.dimen.padding_medium)
-                )
+                ),
+                isHidden = settings
             )
             ItemDetailsRow(
                 labelResID = R.string.seller_phone,
                 itemDetail = item.sellerPhone,
                 modifier = Modifier.padding(
                     horizontal = dimensionResource(id = R.dimen.padding_medium)
-                )
+                ),
+                isHidden = settings
             )
+            Row(modifier = modifier) {
+                Text("    Type")
+                Spacer(modifier = Modifier.weight(1f))
+                Text(text = "${item.type}",
+                    fontWeight = FontWeight.Bold,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(end = dimensionResource(id = R.dimen.padding_medium))
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun ItemDetailsRow(
-    @StringRes labelResID: Int, itemDetail: String, modifier: Modifier = Modifier
+    @StringRes labelResID: Int,
+    itemDetail: String,
+    modifier: Modifier = Modifier,
+    isHidden: Boolean = false
 ) {
     Row(modifier = modifier) {
         Text(stringResource(labelResID))
         Spacer(modifier = Modifier.weight(1f))
-        Text(text = itemDetail, fontWeight = FontWeight.Bold)
+        if (isHidden) {
+            Text(text = itemDetail, fontWeight = FontWeight.Bold, modifier = Modifier.let{
+                it.blur(10.dp)
+            })
+        } else {
+            Text(text = itemDetail, fontWeight = FontWeight.Bold, modifier = Modifier)
+        }
     }
 }
+
+
+
 
 @Composable
 private fun DeleteConfirmationDialog(
@@ -283,17 +387,19 @@ private fun DeleteConfirmationDialog(
         })
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ItemDetailsScreenPreview() {
-    InventoryTheme {
-        ItemDetailsBody(
-            ItemDetailsUiState(
-                outOfStock = true,
-                itemDetails = ItemDetails(1, "Pen", "$100", "10")
-            ),
-            onSellItem = {},
-            onDelete = {}
-        )
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ItemDetailsScreenPreview() {
+//    InventoryTheme {
+//        ItemDetailsBody(
+//            ItemDetailsUiState(
+//                outOfStock = true,
+//                itemDetails = ItemDetails(1, "Pen", "$100", "10")
+//            ),
+//            onSellItem = {},
+//            onDelete = {},
+//            settings = SettingsUiState(),
+//            share = false
+//        )
+//    }
+//}

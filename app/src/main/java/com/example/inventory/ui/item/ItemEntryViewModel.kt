@@ -16,6 +16,7 @@
 
 package com.example.inventory.ui.item
 
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -23,17 +24,21 @@ import androidx.lifecycle.ViewModel
 import com.example.inventory.data.Item
 import com.example.inventory.data.ItemType
 import com.example.inventory.data.ItemsRepository
+import com.example.inventory.encryption.AppSettings
+import com.example.inventory.encryption.SecuredFileRepository
+import com.example.inventory.ui.settings.SettingsItems
 import java.text.NumberFormat
 
 /**
  * ViewModel to validate and insert items in the Room database.
  */
-class ItemEntryViewModel(private val itemsRepository: ItemsRepository)  : ViewModel() {
+class ItemEntryViewModel(private val itemsRepository: ItemsRepository,
+                         private val fileRepository: SecuredFileRepository)  : ViewModel() {
 
     /**
      * Holds current item ui state
      */
-    var itemUiState by mutableStateOf(ItemUiState())
+    var itemUiState by mutableStateOf(ItemUiState(AppSettings.getSettings().toItemDetails()))
         private set
 
     /**
@@ -49,6 +54,10 @@ class ItemEntryViewModel(private val itemsRepository: ItemsRepository)  : ViewMo
         if (validateInput()) {
             itemsRepository.insertItem(itemUiState.itemDetails.toItem())
         }
+    }
+    suspend fun loadItemFromFile(targetFile: Uri) {
+        val item = fileRepository.getItemFromFile(targetFile)
+        itemsRepository.insertItem(item)
     }
 
     private fun validateInput(uiState: ItemDetails = itemUiState.itemDetails): Boolean {
@@ -124,6 +133,13 @@ fun ItemDetails.toItem(): Item = Item(
     sellerPhone =  sellerPhone,
     type = type
 )
+
+fun SettingsItems.toItemDetails() = if (enterDefaults == true) ItemDetails(
+    sellerName = defaultSellerName ?: "",
+    sellerPhone = defaultSellerPhone ?: "",
+    sellerEmail = defaultSellerEmail ?: ""
+) else ItemDetails()
+
 
 fun Item.formatedPrice(): String {
     return NumberFormat.getCurrencyInstance().format(price)

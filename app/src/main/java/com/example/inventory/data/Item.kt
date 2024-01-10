@@ -18,9 +18,12 @@ package com.example.inventory.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
+
 /**
  * Entity data class represents a single row in the database.
  */
+@Serializable
 @Entity(tableName = "items")
 data class Item(
     @PrimaryKey(autoGenerate = true)

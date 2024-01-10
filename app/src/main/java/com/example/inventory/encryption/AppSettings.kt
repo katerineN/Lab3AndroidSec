@@ -47,7 +47,7 @@ object AppSettings {
             hideSensitiveData = encryptedPrefs.getBoolean("hide_sensetive_data", false),
             dataSharing = encryptedPrefs.getBoolean("data_sharing", false),
             defaultSellerName = encryptedPrefs.getString("deafult_seller_name", "Ivan Ivanov"),
-            defaultSellerPhone = encryptedPrefs.getString("default_seller_phone", "89085553535"),
+            defaultSellerPhone = encryptedPrefs.getString("default_seller_phone", "+79085553535"),
             defaultSellerEmail = encryptedPrefs.getString("default_seller_email", "temp@temp.com")
         )
     }

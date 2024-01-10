@@ -16,10 +16,14 @@
 
 package com.example.inventory.ui.item
 
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.inventory.data.ItemsRepository
+import com.example.inventory.encryption.SecuredFile
+import com.example.inventory.encryption.SecuredFileRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -33,6 +37,7 @@ import kotlinx.coroutines.launch
 class ItemDetailsViewModel(
     savedStateHandle: SavedStateHandle,
     private val itemsRepository: ItemsRepository,
+    private val fileRepository: SecuredFileRepository
 ) : ViewModel() {
 
     private val itemId: Int = checkNotNull(savedStateHandle[ItemDetailsDestination.itemIdArg])
@@ -69,6 +74,14 @@ class ItemDetailsViewModel(
      */
     suspend fun deleteItem() {
         itemsRepository.deleteItem(uiState.value.itemDetails.toItem())
+    }
+
+    suspend fun saveItem(path: Uri?){
+        path?.let {
+            fileRepository.saveItemToFile(uiState.value.itemDetails.toItem(), it)
+        } ?: {
+            Log.e("InventoryFile", "Uri was null")
+        }
     }
 
     companion object {

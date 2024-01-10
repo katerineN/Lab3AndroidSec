@@ -21,10 +21,13 @@ package com.example.inventory
 import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons.Filled
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
@@ -38,13 +41,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.inventory.R.string
+import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.InventoryNavHost
+import com.example.inventory.ui.settings.SettingsViewModel
+import kotlinx.coroutines.launch
 
 private fun openFileIntent() = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
     addCategory(Intent.CATEGORY_OPENABLE)
@@ -76,6 +84,7 @@ fun InventoryTopAppBar(
     intentResultLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>? = null
 ) {
     var displayMenu by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
     CenterAlignedTopAppBar(
         title = { Text(title) },
         modifier = modifier,
@@ -106,7 +115,7 @@ fun InventoryTopAppBar(
                     displayMenu = true
                 }) {
                     Icon(
-                        imageVector = Filled.Menu,
+                        imageVector = Filled.MoreVert,
                         contentDescription = "Options"
                     )
                 }

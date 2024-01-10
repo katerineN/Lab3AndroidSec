@@ -19,6 +19,7 @@ package com.example.inventory
 import android.app.Application
 import com.example.inventory.data.AppContainer
 import com.example.inventory.data.AppDataContainer
+import com.example.inventory.encryption.SecuredFile
 
 class InventoryApplication : Application() {
 
